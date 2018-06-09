@@ -1,0 +1,352 @@
+C51 COMPILER V9.01   MAINT                                                                 06/09/2018 17:08:20 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAINT
+OBJECT MODULE PLACED IN maint.OBJ
+COMPILER INVOKED BY: E:\Labcenter Electronics\Keil\C51\BIN\C51.EXE maint.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <regx52.h>
+   2          
+   3          char enFlicker = 0;
+   4          char flicker = 0;
+   5          
+   6          unsigned long start_counting_time = 0;
+   7          unsigned long start_too_dry_time = 0;
+   8          unsigned int max_time = 1;
+   9          char is_too_dry = 0;
+  10          
+  11          enum State {
+  12                  STATE_SHOWING,
+  13                  STATE_SETTING
+  14          } state = STATE_SHOWING;
+  15          
+  16          unsigned long counter0 = 0;
+  17          unsigned long pressing_start;
+  18          char pressing = 0;
+  19          int showing = 0;
+  20          int timespeak = 0;
+  21          int isSpeak = 1;
+  22          void show_empty();
+  23          void show_number(int n);
+  24          void show_clock(int n);
+  25          
+  26          void init() {
+  27   1              TMOD = 0x11;     // 16 bit
+  28   1              IP = 0x1A;         // interrupt priorities
+  29   1      
+  30   1              EX0 = 1;
+  31   1              EX1 = 1;
+  32   1              EA = 1;
+  33   1      
+  34   1              ET0 = 1;
+  35   1              TR0 = 1;
+  36   1      
+  37   1              ET1 = 1;
+  38   1              TR1 = 0;
+  39   1      }
+  40          int current_time() {
+  41   1              return (counter0 - start_counting_time) / 20;
+  42   1      }
+  43          
+  44          int current_dry_time() {
+  45   1              return (counter0 - start_too_dry_time) / 20;
+  46   1      }
+  47          
+  48          void start_beep() {
+  49   1              TR1 = 0;
+  50   1              // 2ms
+  51   1              TH1 = 0xF8;
+  52   1              TL1 = 0x30;
+  53   1              TR1 = 1;
+  54   1      }
+  55          
+C51 COMPILER V9.01   MAINT                                                                 06/09/2018 17:08:20 PAGE 2   
+
+  56          void too_dry() {
+  57   1              start_too_dry_time = counter0;
+  58   1              is_too_dry = 1;
+  59   1              P2_3 = 0;
+  60   1              enFlicker++;
+  61   1              start_beep();
+  62   1      }
+  63          
+  64          void short_pressing() { 
+  65   1              if (state == STATE_SHOWING) {
+  66   2                      //P2_0 = ~P2_0;
+  67   2                      if(showing==0){
+  68   3                              showing = 1;
+  69   3                              P2_0 = 0;
+  70   3                      }
+  71   2                      else{
+  72   3                              showing = 0;
+  73   3                              P2_0=1;
+  74   3                      }
+  75   2              }
+  76   1              else if (state == STATE_SETTING) {
+  77   2                      max_time = (max_time) % 9 + 1;
+  78   2              }
+  79   1      }
+  80          
+  81          void long_pressing() {
+  82   1              //P2_1 = ~P2_1;
+  83   1              if (state == STATE_SHOWING)     {
+  84   2                      P2_1=0;
+  85   2                      state = STATE_SETTING;
+  86   2                      enFlicker++;
+  87   2              }
+  88   1              else if (state == STATE_SETTING) {
+  89   2                      P2_1=1;
+  90   2                      state = STATE_SHOWING;
+  91   2                      enFlicker--;
+  92   2              }
+  93   1      }
+  94          
+  95          void timer0() interrupt 1 {
+  96   1              // 50ms
+  97   1              TH0 = 0x3c;
+  98   1              TL0 = 0xb0;
+  99   1              counter0++;                             // cu 50ms thi tang len 1
+ 100   1      
+ 101   1              if (counter0 % 10 == 0)                 // nhap nhay
+ 102   1                      flicker = ~flicker & 0x1;
+ 103   1      
+ 104   1              if (!is_too_dry && current_time() / 60 >= max_time)
+ 105   1                      too_dry();
+ 106   1      }
+ 107          
+ 108          void timer1() interrupt 3 {
+ 109   1              if (pressing) {
+ 110   2                      TR1 = 0;
+ 111   2                      pressing = 0;   
+ 112   2                      // 500ms
+ 113   2                      if (counter0 - pressing_start >= 20)
+ 114   2                              long_pressing();
+ 115   2                      else
+ 116   2                              short_pressing();
+ 117   2      
+C51 COMPILER V9.01   MAINT                                                                 06/09/2018 17:08:20 PAGE 3   
+
+ 118   2                      if (is_too_dry)
+ 119   2                              start_beep();
+ 120   2              }
+ 121   1              else {                   // phat loa
+ 122   2                      TH1 = 0xF8;
+ 123   2                      TL1 = 0x30;
+ 124   2                      
+ 125   2                      if(isSpeak ==1){
+ 126   3                              P1_5 = ~P1_5; 
+ 127   3                      }
+ 128   2      
+ 129   2                      timespeak +=1;
+ 130   2                      if (timespeak == 100){
+ 131   3                              isSpeak = !isSpeak;
+ 132   3                              timespeak = 0;  
+ 133   3                      }
+ 134   2              }
+ 135   1      }
+ 136          
+ 137          void external0() interrupt 0 {
+ 138   1              if (!pressing) {
+ 139   2                      pressing = 1;
+ 140   2                      pressing_start = counter0;
+ 141   2              }                               
+ 142   1      
+ 143   1      
+ 144   1              // 2ms
+ 145   1              TR1 = 0;
+ 146   1              TH1 = 0xF8;
+ 147   1              TL1 = 0x30;
+ 148   1              TR1 = 1;
+ 149   1      }
+ 150          void external1() interrupt 2 {             // sensor tuoi nuoc
+ 151   1              start_counting_time = counter0;    // quay lai trang thai dau
+ 152   1              enFlicker=0;
+ 153   1              is_too_dry = 0;
+ 154   1              TR1 = 0;
+ 155   1              //P2_0 = 1; //trang thai hien thi t :1 hay T :0
+ 156   1              //P2_1 = 1; // trang thai SHOWING:1 hay SETTING:0
+ 157   1              P2_3=1;   // trang thái too_dry: 0
+ 158   1              P2_4 = 0;
+ 159   1              P2_4 = 1;
+ 160   1      }
+ 161          void main() {
+ 162   1              P2 = 0xff;
+ 163   1              init();
+ 164   1              
+ 165   1              while (1) {
+ 166   2                      if (state == STATE_SHOWING) {
+ 167   3                              if (!pressing)
+ 168   3                                      if (!is_too_dry)
+ 169   3                                              if(showing==0){ 
+ 170   4                                                      show_clock(current_time());
+ 171   4                                              }
+ 172   3                                              else{
+ 173   4                                                      show_number(max_time);
+ 174   4                                              }
+ 175   3      
+ 176   3                                      else
+ 177   3                                              show_clock(current_time());
+ 178   3                              else
+ 179   3                                      show_empty();
+C51 COMPILER V9.01   MAINT                                                                 06/09/2018 17:08:20 PAGE 4   
+
+ 180   3                      }
+ 181   2                      else if (state == STATE_SETTING) {
+ 182   3                              if (!pressing)
+ 183   3                                      show_number(max_time);
+ 184   3                              else
+ 185   3                                      show_empty();
+ 186   3                      }
+ 187   2              }
+ 188   1      }
+ 189          
+ 190          void show_empty() {
+ 191   1              P1_0 = 0;
+ 192   1              P0 = 0xff;
+ 193   1              P1_0 = 1;
+ 194   1      
+ 195   1              P1_1 = 0;
+ 196   1              P0 = 0xff;
+ 197   1              P1_1 = 1;
+ 198   1      
+ 199   1              P1_2 = 0;
+ 200   1              P0 = 0xff;
+ 201   1              P1_2 = 1;
+ 202   1      
+ 203   1              P1_3 = 0;
+ 204   1              P0 = 0xff;
+ 205   1              P1_3 = 1;
+ 206   1      }
+ 207          
+ 208          void __show_number(int led, int n, int dot) 
+ 209          {
+ 210   1              int i;
+ 211   1      
+ 212   1              switch (led) {
+ 213   2              case 0:
+ 214   2                      P1_0 = 0;
+ 215   2                      break;
+ 216   2              case 1:
+ 217   2                      P1_1 = 0;
+ 218   2                      break;
+ 219   2              case 2:
+ 220   2                      P1_2 = 0;
+ 221   2                      break;
+ 222   2              case 3:
+ 223   2                      P1_3 = 0;
+ 224   2                      break;
+ 225   2              }
+ 226   1      
+ 227   1              switch (n) {
+ 228   2              case 0:
+ 229   2                      P0 = ~0x3f;
+ 230   2                      break;
+ 231   2              case 1:
+ 232   2                      P0 = ~0x06;
+ 233   2                      break;
+ 234   2              case 2:
+ 235   2                      P0 = ~0x5b;
+ 236   2                      break;
+ 237   2              case 3:
+ 238   2                      P0 = ~0x4f;
+ 239   2                      break;
+ 240   2              case 4:
+ 241   2                      P0 = ~0x66;
+C51 COMPILER V9.01   MAINT                                                                 06/09/2018 17:08:20 PAGE 5   
+
+ 242   2                      break;
+ 243   2              case 5:
+ 244   2                      P0 = ~0x6d;
+ 245   2                      break;
+ 246   2              case 6:
+ 247   2                      P0 = ~0x7d;
+ 248   2                      break;
+ 249   2              case 7:
+ 250   2                      P0 = ~0x07;
+ 251   2                      break;
+ 252   2              case 8:
+ 253   2                      P0 = ~0x7f;
+ 254   2                      break;
+ 255   2              case 9:
+ 256   2                      P0 = ~0x6f;
+ 257   2                      break;
+ 258   2              }
+ 259   1      
+ 260   1              if (dot) 
+ 261   1                      P0_7 = 0;
+ 262   1      
+ 263   1              // Sleep
+ 264   1              i = 400;
+ 265   1              while (i--);
+ 266   1      
+ 267   1              switch (led) {
+ 268   2              case 0:
+ 269   2                      P1_0 = 1;
+ 270   2                      break;
+ 271   2              case 1:
+ 272   2                      P1_1 = 1;
+ 273   2                      break;
+ 274   2              case 2:
+ 275   2                      P1_2 = 1;
+ 276   2                      break;
+ 277   2              case 3:
+ 278   2                      P1_3 = 1;
+ 279   2                      break;
+ 280   2              }
+ 281   1      }
+ 282          
+ 283          void show_number(int n) {                                                       
+ 284   1              int n3, n2, n1, n0;
+ 285   1      
+ 286   1              if (enFlicker && flicker) {
+ 287   2                      show_empty();   
+ 288   2                      return;
+ 289   2              }
+ 290   1              
+ 291   1              n3 = n % 10; n /= 10;
+ 292   1              n2 = n % 10; n /= 10;
+ 293   1              n1 = n % 10; n /= 10;
+ 294   1              n0 = n;
+ 295   1      
+ 296   1              __show_number(0, n0, 0);
+ 297   1              __show_number(1, n1, 0);
+ 298   1              __show_number(2, n2, 0);
+ 299   1              __show_number(3, n3, 0);
+ 300   1      }
+ 301          void show_clock(int n) {                                                        
+ 302   1              int n3, n2, n1, n0;
+ 303   1              int minute,second;
+C51 COMPILER V9.01   MAINT                                                                 06/09/2018 17:08:20 PAGE 6   
+
+ 304   1              if (enFlicker && flicker) {
+ 305   2                      show_empty();   
+ 306   2                      return;
+ 307   2              }
+ 308   1              minute = n/60;
+ 309   1              second = n%60;
+ 310   1              n1 = minute % 10; minute /= 10;
+ 311   1              n0 = minute;
+ 312   1              n3 = second % 10; second /= 10;
+ 313   1              n2 = second;
+ 314   1      
+ 315   1              __show_number(0, n0, 0);
+ 316   1              __show_number(1, n1, 1);
+ 317   1              __show_number(2, n2, 0);
+ 318   1              __show_number(3, n3, 0);
+ 319   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1145    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     29      14
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
