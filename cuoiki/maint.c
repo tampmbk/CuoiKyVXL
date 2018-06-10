@@ -1,11 +1,11 @@
 #include <regx52.h>
 
-char enFlicker = 0;
+char enFlicker = 0;		 //nhap nhay
 char flicker = 0;
 
 unsigned long start_counting_time = 0;
 unsigned long start_too_dry_time = 0;
-unsigned int max_time = 1;
+unsigned int T = 1;
 char is_too_dry = 0;
 
 enum State {
@@ -37,14 +37,6 @@ void init() {
 	ET1 = 1;
 	TR1 = 0;
 }
-int current_time() {
-	return (counter0 - start_counting_time) / 20;
-}
-
-int current_dry_time() {
-	return (counter0 - start_too_dry_time) / 20;
-}
-
 void start_beep() {
 	TR1 = 0;
 	// 2ms
@@ -52,7 +44,6 @@ void start_beep() {
 	TL1 = 0x30;
 	TR1 = 1;
 }
-
 void too_dry() {
 	start_too_dry_time = counter0;
 	is_too_dry = 1;
@@ -60,7 +51,6 @@ void too_dry() {
 	enFlicker++;
 	start_beep();
 }
-
 void short_pressing() {	
 	if (state == STATE_SHOWING) {
 		//P2_0 = ~P2_0;
@@ -74,7 +64,7 @@ void short_pressing() {
 		}
 	}
 	else if (state == STATE_SETTING) {
-		max_time = (max_time) % 9 + 1;
+		T = (T) % 59 + 1;
 	}
 }
 
@@ -91,8 +81,10 @@ void long_pressing() {
 		enFlicker--;
 	}
 }
-
-void timer0() interrupt 1 {
+int current_time() { 		// t
+	return (counter0 - start_counting_time) / 20;
+}
+void timer0() interrupt 1 {		  //ngat Timer0
 	// 50ms
 	TH0 = 0x3c;
 	TL0 = 0xb0;
@@ -101,11 +93,22 @@ void timer0() interrupt 1 {
 	if (counter0 % 10 == 0)			// nhap nhay
 		flicker = ~flicker & 0x1;
 
-	if (!is_too_dry && current_time() / 60 >= max_time)
+	if (!is_too_dry && current_time() / 60 >= T)
 		too_dry();
 }
 
-void timer1() interrupt 3 {
+void external0() interrupt 0 {			 // ngat INT0
+	if (!pressing) {
+		pressing = 1;
+		pressing_start = counter0;
+	}			 	
+	// 2ms
+	TR1 = 0;
+	TH1 = 0xF8;
+	TL1 = 0x30;
+	TR1 = 1;
+}
+void timer1() interrupt 3 {				 //ngat Timer1
 	if (pressing) {
 		TR1 = 0;
 		pressing = 0;	
@@ -134,23 +137,12 @@ void timer1() interrupt 3 {
 	}
 }
 
-void external0() interrupt 0 {
-	if (!pressing) {
-		pressing = 1;
-		pressing_start = counter0;
-	}			 	
 
-
-	// 2ms
-	TR1 = 0;
-	TH1 = 0xF8;
-	TL1 = 0x30;
-	TR1 = 1;
-}
-void external1() interrupt 2 {		   // sensor tuoi nuoc
+void external1() interrupt 2 {		   // sensor tuoi nuoc //ngat INT1
+	counter0 = 0;
 	start_counting_time = counter0;	   // quay lai trang thai dau
 	enFlicker=0;
-	is_too_dry = 0;
+	is_too_dry = 0;	 // trang thái too_dry: 0
 	TR1 = 0;
 	//P2_0 = 1; //trang thai hien thi t :1 hay T :0
 	//P2_1 = 1; // trang thai SHOWING:1 hay SETTING:0
@@ -167,10 +159,10 @@ void main() {
 			if (!pressing)
 				if (!is_too_dry)
 					if(showing==0){ 
-						show_clock(current_time());
+						show_clock(current_time());		  // hien thi t
 					}
 					else{
-						show_number(max_time);
+						show_number(T);
 					}
 
 				else
@@ -180,13 +172,12 @@ void main() {
 		}
 		else if (state == STATE_SETTING) {
 			if (!pressing)
-				show_number(max_time);
+				show_number(T);
 			else
 				show_empty();
 		}
 	}
 }
-
 void show_empty() {
 	P1_0 = 0;
 	P0 = 0xff;
@@ -204,7 +195,6 @@ void show_empty() {
 	P0 = 0xff;
 	P1_3 = 1;
 }
-
 void __show_number(int led, int n, int dot) 
 {
 	int i;
@@ -279,7 +269,6 @@ void __show_number(int led, int n, int dot)
 		break;
 	}
 }
-
 void show_number(int n) {							
 	int n3, n2, n1, n0;
 

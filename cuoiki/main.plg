@@ -1,0 +1,57 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+D:\google_driver\HUST\20172\VXL\CuoiKy\cuoiki\main.uvproj
+Project File Date:  05/20/2018
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling maint.c...
+MAINT.C(49): warning C206: 'current_time': missing function-prototype
+MAINT.C(50): warning C206: 'too_dry': missing function-prototype
+MAINT.C(57): error C231: 'too_dry': redefinition
+Target not created
+Build target 'Target 1'
+compiling maint.c...
+MAINT.C(45): warning C206: 'start_beep': missing function-prototype
+MAINT.C(56): warning C206: 'current_time': missing function-prototype
+MAINT.C(66): error C231: 'start_beep': redefinition
+MAINT.C(72): error C231: 'start_beep': redefinition
+Target not created
+Build target 'Target 1'
+compiling maint.c...
+MAINT.C(45): warning C206: 'start_beep': missing function-prototype
+MAINT.C(48): error C231: 'start_beep': redefinition
+MAINT.C(54): error C231: 'start_beep': redefinition
+Target not created
+Build target 'Target 1'
+compiling maint.c...
+MAINT.C(45): warning C206: 'start_beep': missing function-prototype
+MAINT.C(48): error C231: 'start_beep': redefinition
+MAINT.C(54): error C231: 'start_beep': redefinition
+Target not created
+Build target 'Target 1'
+compiling maint.c...
+MAINT.C(63): warning C206: 'current_time': missing function-prototype
+MAINT.C(88): warning C206: 'long_pressing': missing function-prototype
+MAINT.C(90): warning C206: 'short_pressing': missing function-prototype
+MAINT.C(110): error C231: 'short_pressing': redefinition
+MAINT.C(125): error C231: 'short_pressing': redefinition
+MAINT.C(127): error C231: 'long_pressing': redefinition
+MAINT.C(139): error C231: 'long_pressing': redefinition
+Target not created
+Build target 'Target 1'
+compiling maint.c...
+MAINT.C(93): warning C206: 'current_time': missing function-prototype
+linking...
+Program Size: data=46.0 xdata=0 code=1693
+creating hex file from "main"...
+"main" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling maint.c...
+linking...
+Program Size: data=46.0 xdata=0 code=1693
+creating hex file from "main"...
+"main" - 0 Error(s), 0 Warning(s).
