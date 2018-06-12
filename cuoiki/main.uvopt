@@ -321,12 +321,12 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>2</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>13</ColumnNumber>
+      <ColumnNumber>25</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>106</TopLine>
-      <CurrentLine>106</CurrentLine>
+      <CurrentLine>116</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\maint.c</PathWithFileName>
       <FilenameWithoutPath>maint.c</FilenameWithoutPath>
@@ -1710,9 +1710,9 @@
         </Doc>
         <Doc>
           <Name>.\maint.c</Name>
-          <ColumnNumber>13</ColumnNumber>
+          <ColumnNumber>25</ColumnNumber>
           <TopLine>106</TopLine>
-          <CurrentLine>106</CurrentLine>
+          <CurrentLine>116</CurrentLine>
         </Doc>
       </Documents>
     </MDIGroup>

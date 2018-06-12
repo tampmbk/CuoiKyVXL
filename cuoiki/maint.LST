@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   MAINT                                                                 06/10/2018 11:25:11 PAGE 1   
+C51 COMPILER V9.01   MAINT                                                                 06/12/2018 15:28:01 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE MAINT
@@ -62,7 +62,7 @@ line level    source
   53   1      }
   54          void short_pressing() { 
   55   1              if (state == STATE_SHOWING) {
-C51 COMPILER V9.01   MAINT                                                                 06/10/2018 11:25:11 PAGE 2   
+C51 COMPILER V9.01   MAINT                                                                 06/12/2018 15:28:01 PAGE 2   
 
   56   2                      //P2_0 = ~P2_0;
   57   2                      if(showing==0){
@@ -126,7 +126,7 @@ line level    source
  115   2                      // 500ms
  116   2                      if (counter0 - pressing_start >= 20)
  117   2                              long_pressing();
-C51 COMPILER V9.01   MAINT                                                                 06/10/2018 11:25:11 PAGE 3   
+C51 COMPILER V9.01   MAINT                                                                 06/12/2018 15:28:01 PAGE 3   
 
  118   2                      else
  119   2                              short_pressing();
@@ -190,7 +190,7 @@ line level    source
  177   3                                      show_empty();
  178   3                      }
  179   2              }
-C51 COMPILER V9.01   MAINT                                                                 06/10/2018 11:25:11 PAGE 4   
+C51 COMPILER V9.01   MAINT                                                                 06/12/2018 15:28:01 PAGE 4   
 
  180   1      }
  181          void show_empty() {
@@ -254,7 +254,7 @@ line level    source
  239   2              case 7:
  240   2                      P0 = ~0x07;
  241   2                      break;
-C51 COMPILER V9.01   MAINT                                                                 06/10/2018 11:25:11 PAGE 5   
+C51 COMPILER V9.01   MAINT                                                                 06/12/2018 15:28:01 PAGE 5   
 
  242   2              case 8:
  243   2                      P0 = ~0x7f;
@@ -318,7 +318,7 @@ line level    source
  301   1              n3 = second % 10; second /= 10;
  302   1              n2 = second;
  303   1      
-C51 COMPILER V9.01   MAINT                                                                 06/10/2018 11:25:11 PAGE 6   
+C51 COMPILER V9.01   MAINT                                                                 06/12/2018 15:28:01 PAGE 6   
 
  304   1              __show_number(0, n0, 0);
  305   1              __show_number(1, n1, 1);
